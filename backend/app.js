@@ -1,8 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
 
-const authRoutes = require('./routes/auth');
 const bookRoutes = require('./routes/books');
+const userRoutes = require('./routes/user');
 
 mongoose.connect('mongodb+srv://test:r7IdcleNUq2FN0Un@oc-projet7.1oo3a.mongodb.net/?retryWrites=true&w=majority&appName=OC-Projet7',
   { useNewUrlParser: true,
@@ -19,7 +19,7 @@ app.use((req, res, next) => {
     next();
   });
  
-app.use('/api/auth', authRoutes);
 app.use('/api/books', bookRoutes);
+app.use('/api/auth', userRoutes);
 
 module.exports = app;
