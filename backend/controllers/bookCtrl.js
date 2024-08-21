@@ -6,7 +6,7 @@ exports.getAllBooks = (req, res, next) => {
     Book.find()
       .then(books => res.status(200).json(books))
       .catch(error => res.status(400).json({ error }));
-}
+};
 
 // Contrôleur pour récupérer un livre par son ID
 exports.getBookById = (req, res, next) => {
@@ -22,9 +22,13 @@ exports.getBookById = (req, res, next) => {
 
   // Logique pour récupérer les 3 livres ayant la meilleure note moyenne
 exports.getBestRatingBooks = (req, res, next) => {
-
-
+  Book.find()
+    .sort({ averageRating: -1 })
+    .limit(3)
+    .then(books => res.status(200).json(books))
+    .catch(error => res.status(400).json({ error }));  
 };
+
 
 // Logique pour ajouter un nouveau livre avec une image
 exports.addBook = (req, res, next) => {
@@ -93,6 +97,31 @@ exports.deleteBook = (req, res, next) => {
  .catch(error => res.status(500).json({ error }));
 };
 
+// Logique pour ajouter une note à un livre pour un utilisateur donné
 exports.addRating = (req, res, next) => {
-  // Logique pour ajouter une note à un livre pour un utilisateur donné
+  Book.findOne({ _id: req.params.id })
+    .then(book => {
+      if (!book) {
+        return res.status(404).json({ error: 'Livre non trouvé !' });
+      }
+
+      const existingRatingIndex = book.ratings.findIndex(rating => rating.userId === req.auth.userId);
+      if (existingRatingIndex !== -1) {
+        return res.status(400).json({ error: 'Vous avez déjà noté ce livre.' });
+      }
+
+      const newRating = {
+        userId: req.auth.userId,
+        rating: req.body.rating
+      };
+      book.ratings.push(newRating);
+
+      const totalRatings = book.ratings.reduce((acc, rating) => acc + rating.rating, 0);
+      book.averageRating = totalRatings / book.ratings.length;
+
+      book.save()
+        .then(() => res.status(200).json(book))
+        .catch(error => res.status(400).json({ error }));
+    })
+    .catch(error => res.status(500).json({ error }));
 };
