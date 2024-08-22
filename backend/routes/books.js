@@ -8,11 +8,11 @@ const router = express.Router();
 // Route pour récupérer tous les livres
 router.get('/', bookCtrl.getAllBooks);
 
-// Route pour récupérer un livre par son ID
-router.get('/:id', bookCtrl.getBookById);
-
 // Route pour récupérer les 3 livres ayant la meilleure note moyenne
 router.get('/bestrating', bookCtrl.getBestRatingBooks);
+
+// Route pour récupérer un livre par son ID
+router.get('/:id', bookCtrl.getBookById);
 
 // Route pour ajouter un nouveau livre avec une image
 router.post('/', auth, multer, bookCtrl.addBook);

@@ -20,15 +20,20 @@ exports.getBookById = (req, res, next) => {
       .catch(error => res.status(400).json({ error }));
   };
 
-  // Logique pour récupérer les 3 livres ayant la meilleure note moyenne
+// Logique pour récupérer les 3 livres ayant la meilleure note moyenne
 exports.getBestRatingBooks = (req, res, next) => {
+  console.log('getBestRatingBooks method called');
+  
   Book.find()
     .sort({ averageRating: -1 })
     .limit(3)
-    .then(books => res.status(200).json(books))
-    .catch(error => res.status(400).json({ error }));  
+    .then(books => {
+      res.status(200).json(books);
+    })
+    .catch(error => {
+      res.status(400).json({ error });
+    });
 };
-
 
 // Logique pour ajouter un nouveau livre avec une image
 exports.addBook = (req, res, next) => {
