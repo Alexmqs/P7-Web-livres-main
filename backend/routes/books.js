@@ -1,7 +1,7 @@
 const express = require('express');
 const bookCtrl = require('../controllers/bookCtrl');
 const auth = require('../middleware/auth');
-const multer = require('../middleware/multer-config');
+const { multerConfig, processImage } = require('../middleware/multer-config');
 
 const router = express.Router();
 
@@ -15,10 +15,10 @@ router.get('/bestrating', bookCtrl.getBestRatingBooks);
 router.get('/:id', bookCtrl.getBookById);
 
 // Route pour ajouter un nouveau livre avec une image
-router.post('/', auth, multer, bookCtrl.addBook);
+router.post('/', auth, multerConfig, processImage, bookCtrl.addBook);
 
 // Route pour mettre à jour un livre par son ID avec ou sans image
-router.put('/:id', auth, multer, bookCtrl.updateBook);
+router.put('/:id', auth, multerConfig, processImage, bookCtrl.updateBook);
 
 // Route pour supprimer un livre par son ID
 router.delete('/:id',auth, bookCtrl.deleteBook);
