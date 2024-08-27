@@ -3,33 +3,32 @@ const fs = require('fs');
 
 // Contrôleur pour récupérer tous les livres
 exports.getAllBooks = (req, res, next) => {
-    Book.find()
-      .then(books => res.status(200).json(books))
-      .catch(error => res.status(400).json({ error }));
+  Book.find()
+    .then((books) => res.status(200).json(books))
+    .catch((error) => res.status(400).json({ error }));
 };
 
 // Contrôleur pour récupérer un livre par son ID
 exports.getBookById = (req, res, next) => {
-    Book.findOne({ _id: req.params.id })
-      .then(book => {
-        if (!book) {
-          return res.status(404).json({ error: 'Book not found' });
-        }
-        res.status(200).json(book);
-      })
-      .catch(error => res.status(400).json({ error }));
-  };
+  Book.findOne({ _id: req.params.id })
+    .then((book) => {
+      if (!book) {
+        return res.status(404).json({ error: 'Book not found' });
+      }
+      res.status(200).json(book);
+    })
+    .catch((error) => res.status(400).json({ error }));
+};
 
 // Logique pour récupérer les 3 livres ayant la meilleure note moyenne
 exports.getBestRatingBooks = (req, res, next) => {
-  
   Book.find()
     .sort({ averageRating: -1 })
     .limit(3)
-    .then(books => {
+    .then((books) => {
       res.status(200).json(books);
     })
-    .catch(error => {
+    .catch((error) => {
       res.status(400).json({ error });
     });
 };
@@ -48,25 +47,25 @@ exports.addBook = (req, res, next) => {
     averageRating: 0,
   });
 
-  book.save()
+  book
+    .save()
     .then(() => res.status(201).json({ message: 'Livre enregistré !' }))
-    .catch(error => res.status(400).json({ error }));
+    .catch((error) => res.status(400).json({ error }));
 };
-
-
 
 // Logique pour mettre à jour un livre par son ID avec ou sans image
 exports.updateBook = (req, res, next) => {
-  const bookObject = req.file ? 
-    {
-      ...JSON.parse(req.body.book),
-      imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`
-    } : { ...req.body };
+  const bookObject = req.file
+    ? {
+        ...JSON.parse(req.body.book),
+        imageUrl: `${req.protocol}://${req.get('host')}/images/${req.file.filename}`,
+      }
+    : { ...req.body };
 
   delete bookObject._userId;
 
   Book.findOne({ _id: req.params.id })
-    .then(book => {
+    .then((book) => {
       if (!book) {
         return res.status(404).json({ error: 'Livre non trouvé !' });
       }
@@ -79,66 +78,68 @@ exports.updateBook = (req, res, next) => {
         fs.unlink(`images/${oldFilename}`, () => {
           Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id })
             .then(() => res.status(200).json({ message: 'Livre modifié avec succès !' }))
-            .catch(error => res.status(400).json({ error }));
+            .catch((error) => res.status(400).json({ error }));
         });
       } else {
         Book.updateOne({ _id: req.params.id }, { ...bookObject, _id: req.params.id })
           .then(() => res.status(200).json({ message: 'Livre modifié avec succès !' }))
-          .catch(error => res.status(400).json({ error }));
+          .catch((error) => res.status(400).json({ error }));
       }
     })
-    .catch(error => res.status(400).json({ error }));
+    .catch((error) => res.status(400).json({ error }));
 };
-
 
 // Logique pour supprimer un livre par son ID
 exports.deleteBook = (req, res, next) => {
- Book.findOne({ _id: req.params.id })
- .then(book => {
-   if (!book) {
-     return res.status(404).json({ error: 'Livre non trouvé !' });
-   }
+  Book.findOne({ _id: req.params.id })
+    .then((book) => {
+      if (!book) {
+        return res.status(404).json({ error: 'Livre non trouvé !' });
+      }
 
-   if (book.userId !== req.auth.userId) {
-     return res.status(403).json({ error: 'Requête non autorisée !' });
-   }
+      if (book.userId !== req.auth.userId) {
+        return res.status(403).json({ error: 'Requête non autorisée !' });
+      }
 
-   const filename = book.imageUrl.split('/images/')[1];
+      const filename = book.imageUrl.split('/images/')[1];
 
-   fs.unlink(`images/${filename}`, () => {
-     Book.deleteOne({ _id: req.params.id })
-       .then(() => res.status(200).json({ message: 'Livre supprimé avec succès !' }))
-       .catch(error => res.status(400).json({ error }));
-   });
- })
- .catch(error => res.status(500).json({ error }));
+      fs.unlink(`images/${filename}`, () => {
+        Book.deleteOne({ _id: req.params.id })
+          .then(() => res.status(200).json({ message: 'Livre supprimé avec succès !' }))
+          .catch((error) => res.status(400).json({ error }));
+      });
+    })
+    .catch((error) => res.status(500).json({ error }));
 };
 
 // Logique pour ajouter une note à un livre pour un utilisateur donné
 exports.addRating = (req, res, next) => {
   Book.findOne({ _id: req.params.id })
-    .then(book => {
+    .then((book) => {
       if (!book) {
         return res.status(404).json({ error: 'Livre non trouvé !' });
       }
 
-      const existingRatingIndex = book.ratings.findIndex(rating => rating.userId === req.auth.userId);
+      const existingRatingIndex = book.ratings.findIndex(
+        (rating) => rating.userId === req.auth.userId
+      );
       if (existingRatingIndex !== -1) {
         return res.status(400).json({ error: 'Vous avez déjà noté ce livre.' });
       }
 
       const newRating = {
         userId: req.auth.userId,
-        rating: req.body.rating
+        rating: req.body.rating,
       };
       book.ratings.push(newRating);
 
       const totalRatings = book.ratings.reduce((acc, rating) => acc + rating.rating, 0);
-      book.averageRating = totalRatings / book.ratings.length;
+      book.averageRating = Math.round((totalRatings / book.ratings.length) * 10) / 10;
 
-      book.save()
+      book
+        .save()
         .then(() => res.status(200).json(book))
-        .catch(error => res.status(400).json({ error }));
+        .catch((error) => res.status(400).json({ error }));
     })
-    .catch(error => res.status(500).json({ error }));
+    .catch((error) => res.status(500).json({ error }));
 };

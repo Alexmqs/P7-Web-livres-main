@@ -6,7 +6,7 @@ const MIME_TYPES = {
   'image/jpg': 'jpg',
   'image/jpeg': 'jpg',
   'image/png': 'png',
-  'image/webp': 'webp'
+  'image/webp': 'webp',
 };
 
 // Configure multer pour stocker le fichier en mémoire
@@ -24,21 +24,17 @@ const processImage = (req, res, next) => {
   const outputPath = path.join(__dirname, '../images', filename);
 
   sharp(req.file.buffer)
-    .resize(500, 500, { fit: 'inside' }) // Conserver les proportions, et s'assurer que l'image s'insère dans 500x500px
-    .toFormat('webp') 
+    .resize(500, 500, { fit: 'inside' })
+    .toFormat('webp')
     .webp({ quality: 80 })
     .toFile(outputPath, (error, info) => {
       if (error) {
         return next(error);
       }
-      req.file.filename = filename; 
-      req.file.path = outputPath; 
+      req.file.filename = filename;
+      req.file.path = outputPath;
       next();
     });
 };
 
 module.exports = { multerConfig, processImage };
-
-
-
-  

@@ -21,9 +21,9 @@ router.post('/', auth, multerConfig, processImage, bookCtrl.addBook);
 router.put('/:id', auth, multerConfig, processImage, bookCtrl.updateBook);
 
 // Route pour supprimer un livre par son ID
-router.delete('/:id',auth, bookCtrl.deleteBook);
+router.delete('/:id', auth, bookCtrl.deleteBook);
 
 // Route pour ajouter une note à un livre pour un utilisateur donné
-router.post('/:id/rating',auth, bookCtrl.addRating);
+router.post('/:id/rating', auth, bookCtrl.addRating);
 
 module.exports = router;
